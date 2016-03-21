@@ -23,6 +23,6 @@ EOF
 
   s.add_dependency "rack"
   s.add_dependency "nokogiri"
-  # s.add_dependency "patron"
+  s.add_dependency "curb"
   s.add_development_dependency "riot"
 end

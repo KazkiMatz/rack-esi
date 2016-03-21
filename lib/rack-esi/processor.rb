@@ -1,3 +1,6 @@
+require 'uri'
+require 'curb'
+
 class Rack::ESI
   class Processor < Struct.new(:esi, :env)
 
@@ -17,8 +20,19 @@ class Rack::ESI
     end
 
     def include(path)
-      # RADAR patron here?
-      esi.call env.merge('PATH_INFO' => path, 'REQUEST_URI' => path)
+      unless URI.parse(path).scheme
+        esi.call env.merge('PATH_INFO' => path, 'REQUEST_URI' => path)
+      else
+        # Retrieve external resource
+        curl = Curl::Easy.new(path)
+        curl.http_get
+        http_response, *header_lines = curl.header_str.split(/[\r\n]+/).map(&:strip)
+        status_code = http_response.split(' ')[1].to_i
+        headers = Hash[header_lines.flat_map{|s| s.scan(/^(\S+): (.+)/) }]
+        body = curl.body_str
+
+        return status_code, headers, [body]
+      end
     rescue => e
       return 500, {}, []
     end
