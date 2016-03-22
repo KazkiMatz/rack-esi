@@ -25,6 +25,7 @@ class Rack::ESI
       else
         # Retrieve external resource
         curl = Curl::Easy.new(path)
+        curl.ssl_verify_peer = false
         curl.http_get
         http_response, *header_lines = curl.header_str.split(/[\r\n]+/).map(&:strip)
         status_code = http_response.split(' ')[1].to_i
