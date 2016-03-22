@@ -46,11 +46,13 @@ class Rack::ESI
           status, headers, body = include node['alt']
         end
 
-        if status == 200
-          node.replace read(body)
-        elsif node['onerror'] != 'continue'
-          raise Error
+        unless status == 200
+          if node['onerror'] != 'continue'
+            raise Error
+          end
         end
+
+        node.replace read(body)
       else
         node.remove
       end
